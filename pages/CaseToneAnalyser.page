@@ -1,0 +1,74 @@
+<apex:page standardcontroller="Case" extensions="CaseToneAnalyserController" showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0">
+
+<html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+<head>
+    <title>CASE Tone Analyser Action</title>
+    <apex:stylesheet value="{!URLFOR($Resource.SDLS202, 'assets/styles/salesforce-lightning-design-system.css')}" />
+    <apex:includeScript value="{!$Resource.jquery3}"/>
+    <script src="/canvas/sdk/js/publisher.js"/>
+    <script>
+        Sfdc.canvas.publisher.resize( { height : "350px" } );
+        function getCallAnalyserService() {
+            console.log('getCallAnalyserService Start');
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.CaseToneAnalyserController.callAnalyserService}',
+                '{!Case.Id}',
+                handleCaseToneAnalyserControllerResult
+                );
+        }
+        function handleCaseToneAnalyserControllerResult(result, event) {
+            console.log(result);
+            $( "#spinner" ).addClass( "slds-hide" );
+            $( "#results" ).removeClass( "slds-hide" );
+            $.each(result.document_tone.tone_categories, function( i, category ) {
+                if (category.category_id == "emotion_tone") {
+                   $.each(category.tones, function( j, tone ) {
+                    $( "#emotionsCol" ).append( "<div class=\"slds-tile\">" + tone.tone_name + "<div class=\"slds-tile__detail slds-text-body--small\">Score: " + tone.score.toFixed(2) + "</div></div>" );
+                });
+               }
+               if (category.category_id == "language_tone") {
+                   $.each(category.tones, function( j, tone ) {
+                    $( "#langStyleCol" ).append( "<div class=\"slds-tile\">" + tone.tone_name + "<div class=\"slds-tile__detail slds-text-body--small\">Score: " + tone.score.toFixed(2) + "</div></div>" );
+                });
+               }
+               if (category.category_id == "social_tone") {
+                   $.each(category.tones, function( j, tone ) {
+                    $( "#socialCol" ).append( "<div class=\"slds-tile\">" + tone.tone_name + "<div class=\"slds-tile__detail slds-text-body--small\">Score: " + tone.score.toFixed(2) + "</div></div>" );
+                });
+               }
+           });
+        }
+        getCallAnalyserService();
+    </script>
+</head>
+
+<body>
+
+    <div class="slds">
+       
+        <div id="spinner" class="slds-spinner_container">
+          <div class="slds-spinner--brand slds-spinner slds-spinner--large" aria-hidden="false" role="alert">
+            <div class="slds-spinner__dot-a"></div>
+            <div class="slds-spinner__dot-b"></div>
+        </div>
+    </div>
+    
+    <div id="results" class="slds-grid slds-wrap slds-grid--pull-padded slds-m-top--x-small slds-hide">
+        <div id="emotionsCol" class="slds-col--padded slds-m-left--x-large">
+           <p class="slds-page-header__title slds-m-bottom--large">Emotion</p>
+       </div>
+       <div id="langStyleCol" class="slds-col--padded">
+           <p class="slds-page-header__title slds-m-bottom--large">Language Style</p>
+       </div>
+       <div id="socialCol" class="slds-col--padded">
+           <p class="slds-page-header__title slds-m-bottom--large">Social Tendencies</p>
+       </div>
+   </div>
+   
+</div>
+
+</body>
+
+</html>    
+</apex:page>
